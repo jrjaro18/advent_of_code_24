@@ -5,13 +5,26 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	Part2()
+}
+
+func getSession() string{
+	if err := godotenv.Load("../.env"); err != nil {
+        log.Print("No .env file found")
+    }
+	session, exists := os.LookupEnv("SESSION")
+	if !exists {
+		log.Fatalln("Env is absent")
+	}
+	return session
 }
 
 func Part1() {
@@ -52,7 +65,7 @@ func input() ([]int, []int) {
 	}
 	cookie := http.Cookie{
 		Name : "session",
-		Value : "",
+		Value : getSession(),
 	}
 	req.AddCookie(&cookie)
 
