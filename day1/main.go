@@ -6,19 +6,25 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
+
 	"github.com/joho/godotenv"
 )
 
 func main() {
-	Part2()
+	arr1, arr2 := input(getSession())
+	ans1 := part1(slices.Clone(arr1), slices.Clone(arr2))
+	log.Printf("Answer for part 1 is %v", ans1)
+	ans2 := part2(arr1, arr2)
+	log.Printf("Answer for part 2 is %v", ans2)
 }
 
 func getSession() string{
 	if err := godotenv.Load("../.env"); err != nil {
-        log.Print("No .env file found")
+        log.Fatalln("No .env file found")
     }
 	session, exists := os.LookupEnv("SESSION")
 	if !exists {
@@ -27,9 +33,7 @@ func getSession() string{
 	return session
 }
 
-func Part1() {
- 	arr1, arr2 := input()
-	
+func part1(arr1 []int, arr2 []int) int {
 	sort.Slice(arr1, func(i, j int) bool {
 		return arr1[i] < arr1[j]	
 	})
@@ -41,31 +45,29 @@ func Part1() {
 	for i := 0; i < len(arr1); i++ {
 		ans += int(math.Abs(float64(arr1[i] - arr2[i])));
 	}
-	log.Println(ans)
+	return ans;
 }
 
-func Part2() {
-	arr1, arr2 := input()
-	map_of_2 := make(map[int]int)
+func part2(arr1 []int, arr2 []int) int {
+	mapper := make(map[int]int)
 	for _, x := range(arr2) {
-		map_of_2[x]++;
+		mapper[x]++;
 	}
 	ans := 0;
 	for _, x := range(arr1) {
-		ans += x*map_of_2[x]
+		ans += x*mapper[x]
 	}
-	log.Println(ans)
+	return ans;
 }
 
-func input() ([]int, []int) {
-
+func input(session string) ([]int, []int) {
 	req, err := http.NewRequest("GET", "https://adventofcode.com/2024/day/1/input", nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	cookie := http.Cookie{
 		Name : "session",
-		Value : getSession(),
+		Value : session,
 	}
 	req.AddCookie(&cookie)
 
@@ -73,7 +75,7 @@ func input() ([]int, []int) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-	log.Println(resp.StatusCode)
+	log.Printf("Fetching input, status code: %v", resp.StatusCode)
 
 	x := resp.Body;
 	scanner := bufio.NewScanner(x)
